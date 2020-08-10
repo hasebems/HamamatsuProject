@@ -43,6 +43,9 @@ unsigned long lastUpdateTime = 0;
 // MIDI
 MIDI_CREATE_DEFAULT_INSTANCE();
 
+//-------------------------------
+//  Arduino Functions
+//-------------------------------
 void setup() {
   int wifiCheckCount = 0;
   
@@ -122,11 +125,38 @@ void loop() {
   }
 }
 
+//-------------------------------
+//  MQTT
+//-------------------------------
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
   printSomewhere("message has come!");
 }
 
+void reConnect() { // 接続が切れた際に再接続する
+  static unsigned long lastFailedTime = 0;
+  static boolean lastConnect = false;
+  unsigned long t = millis();
+  if (!mqttClient.connected()) {
+    if (lastConnect || t - lastFailedTime >= 5000) {
+      if (mqttClient.connect(mqttClientID, mqttUserName, mqttPassword)) {
+        printSomewhere("MQTT Connect OK.");
+        lastConnect = true;
+        mqttClient.subscribe("inTopic");
+      } else {
+        printSomewhere("MQTT Connect failed, rc=");
+        // http://pubsubclient.knolleary.net/api.html#state に state 一覧が書いてある
+        printSomewhere(mqttClient.state());
+        lastConnect = false;
+        lastFailedTime = t;
+      }
+    }
+  }
+}
+
+//-------------------------------
+//  Print for Debug
+//-------------------------------
 void initPrintSomewhere(void)
 {
 #if ( YOUR_DEVICE == M5STICK )
@@ -154,7 +184,9 @@ void printSomewhere(const char* txt)
 #endif
 }
 
+//-------------------------------
 //  Gyro
+//-------------------------------
 void initGyro(void){
   gyroCurtX = gyroCurtY = gyroCurtZ = 0;
 #if ( YOUR_DEVICE == M5STICK )
@@ -185,6 +217,9 @@ void updateLcd() {
 #endif
 }
 
+//-------------------------------
+//  Send MIDI message
+//-------------------------------
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
@@ -207,25 +242,4 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
   printSomewhere(topic);
   printSomewhere(msg);
   mqttClient.publish(topic, msg);
-}
-
-void reConnect() { // 接続が切れた際に再接続する
-  static unsigned long lastFailedTime = 0;
-  static boolean lastConnect = false;
-  unsigned long t = millis();
-  if (!mqttClient.connected()) {
-    if (lastConnect || t - lastFailedTime >= 5000) {
-      if (mqttClient.connect(mqttClientID, mqttUserName, mqttPassword)) {
-        printSomewhere("MQTT Connect OK.");
-        lastConnect = true;
-        mqttClient.subscribe("inTopic");
-      } else {
-        printSomewhere("MQTT Connect failed, rc=");
-        // http://pubsubclient.knolleary.net/api.html#state に state 一覧が書いてある
-        printSomewhere(mqttClient.state());
-        lastConnect = false;
-        lastFailedTime = t;
-      }
-    }
-  }
 }
