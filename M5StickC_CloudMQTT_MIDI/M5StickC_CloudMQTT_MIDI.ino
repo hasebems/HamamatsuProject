@@ -11,8 +11,8 @@
 #include <MIDI.h>
 
 // WiFi settings
-const char ssid[] = "xxxxxxxx";         //  Wifi ID
-const char password[] = "xxxxxxxx";     //  Wifi PW
+const char ssid[] = "xxxxxxxx";         //  #### Your Wifi ID
+const char password[] = "xxxxxxxx";     //  #### Your Wifi PW
 WiFiClient wifiClient;
 
 // MQTT settings
@@ -22,6 +22,11 @@ const char* mqttPassword = "S0f6ZlAbEwqp";
 const int mqttPort = 11333;
 const char* mqttClientID = "M5Stack(hasebe)";
 PubSubClient mqttClient(wifiClient);
+
+const String midiTopic("HMMT_hasebe:MIDI");    //  #### Your Topic Name for MIDI
+const String gyroTopic("HMMT_hasebe:Gyro");    //  #### Your Topic Name for Gyro
+const String swTopic("HMMT_hasebe:M5SW");      //  #### Your Topic Name for M5stack Switch
+
 
 // Global Variables
 float gyroCurtX, gyroCurtY, gyroCurtZ;  // Gyro Value
@@ -40,16 +45,16 @@ void setup() {
   WiFi.begin(ssid, password);
 
   while (WiFi.status() != WL_CONNECTED) {
-    printSomeWhere(".");
+    printSomewhere(".");
     delay(500);
     if ( ++wifiCheckCount > 2000 ){
-      printSomeWhere("\n");
-      printSomeWhere("No Wifi Connection!\n");
+      printSomewhere("\n");
+      printSomewhere("No Wifi Connection!\n");
       break;
     }
   }
   mqttClient.setServer(mqttBrokerAddr, mqttPort);
-  printSomeWhere("\n");
+  printSomewhere("\n");
 
 //  Initialize MIDI
   MIDI.setHandleNoteOn(handleNoteOn);
@@ -71,10 +76,14 @@ void loop() {
     readGyro();
     updateLcd();
     if (sending) {
-      // クラウドに送る処理
-      mqttClient.publish("GyroX", String(gyroCurtX).c_str());
-      mqttClient.publish("GyroY", String(gyroCurtY).c_str());
-      mqttClient.publish("GyroZ", String(gyroCurtZ).c_str());
+      // Send to cloud
+      const String msgType(":XYZ");
+      const String topicStr = gyroTopic + msgType;
+      const char* const topic = topicStr.c_str();
+      const char* const msg = (String(gyroCurtX)+"-"+String(gyroCurtY)+"-"+String(gyroCurtZ)).c_str();
+      printSomewhere(topic);
+      printSomewhere(msg);
+      mqttClient.publish(topic, msg);
     }
   }
   // ボタンBが押されたら送信の有効無効を切り替える
@@ -83,17 +92,25 @@ void loop() {
   }
   // ボタンAが押されたら
   if (M5.BtnA.wasPressed()) {
-    // 即送信する
-    mqttClient.publish("ButtonA", "Pressed");
+    // Send
+    const char* const topic = swTopic.c_str();
+    const char* const msg = "Pressed";
+    printSomewhere(topic);
+    printSomewhere(msg);
+    mqttClient.publish(topic, msg);
   }
   // ボタンAが離されたら
   if (M5.BtnA.wasReleased()) {
-    // 即送信する
-    mqttClient.publish("ButtonA", "Released");
+    // Send
+    const char* const topic = swTopic.c_str();
+    const char* const msg = "Released";
+    printSomewhere(topic);
+    printSomewhere(msg);
+    mqttClient.publish(topic, msg);
   }
 }
 
-void printSomeWhere(int num)
+void printSomewhere(int num)
 {
   char strx[128]={0};
   sprintf(strx,"%d",num);
@@ -101,7 +118,7 @@ void printSomeWhere(int num)
 //  Serial.println(txt);
 }
 
-void printSomeWhere(const char* txt)
+void printSomewhere(const char* txt)
 {
   M5.Lcd.printf(txt);
 //  Serial.println(txt);
@@ -130,20 +147,24 @@ void updateLcd() {
 
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
-  mqttClient.publish("tp", "MIDI:note_on");
-  mqttClient.publish("ch", String(channel).c_str());
-  mqttClient.publish("nt", String(pitch).c_str());
-  mqttClient.publish("vl", String(velocity).c_str());
-  printSomeWhere("note_on\n");
+  const String msgType(":note_on");
+  const String topicStr = midiTopic + msgType;
+  const char* const topic = topicStr.c_str();
+  const char* const msg = (String(144+channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
+  printSomewhere(topic);
+  printSomewhere(msg);
+  mqttClient.publish(topic, msg);
 }
 
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
-  mqttClient.publish("tp", "MIDI:note_off");
-  mqttClient.publish("ch", String(channel).c_str());
-  mqttClient.publish("nt", String(pitch).c_str());
-  mqttClient.publish("vl", String(velocity).c_str());
-  printSomeWhere("note_off\n");
+  const String msgType(":note_off");
+  const String topicStr = midiTopic + msgType;
+  const char* const topic = topicStr.c_str();
+  const char* const msg = (String(128+channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
+  printSomewhere(topic);
+  printSomewhere(msg);
+  mqttClient.publish(topic, msg);
 }
 
 void reConnect() { // 接続が切れた際に再接続する
@@ -153,12 +174,12 @@ void reConnect() { // 接続が切れた際に再接続する
   if (!mqttClient.connected()) {
     if (lastConnect || t - lastFailedTime >= 5000) {
       if (mqttClient.connect(mqttClientID, mqttUserName, mqttPassword)) {
-        printSomeWhere("MQTT Connect OK.");
+        printSomewhere("MQTT Connect OK.");
         lastConnect = true;
       } else {
-        printSomeWhere("MQTT Connect failed, rc=");
+        printSomewhere("MQTT Connect failed, rc=");
         // http://pubsubclient.knolleary.net/api.html#state に state 一覧が書いてある
-        printSomeWhere(mqttClient.state());
+        printSomewhere(mqttClient.state());
         lastConnect = false;
         lastFailedTime = t;
       }
