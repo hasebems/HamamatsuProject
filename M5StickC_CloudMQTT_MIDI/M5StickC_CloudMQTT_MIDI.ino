@@ -75,6 +75,7 @@ void setup() {
   MIDI.setHandleNoteOn(handleNoteOn);
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin();
+  MIDI.turnThruOff();
 }
 
 void loop() {
@@ -237,13 +238,14 @@ void updateLcd() {
 //-------------------------------
 //  Send MIDI message
 //-------------------------------
+const String nton("note_on");
+const String ntof("note_off");
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
-  const String msgType(":note_on");
-  const String topicStr = yourDevice + ":" + midiTopic + msgType;
+  const String topicStr = yourDevice+":"+midiTopic+":"+nton;
   const char* const topic = topicStr.c_str();
-  const char* const msg = (String(144+channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
+  const char* const msg = (String(channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
   printSomewhere(topic);
   printSomewhere(msg);
   mqttClient.publish(topic, msg);
@@ -252,10 +254,9 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
-  const String msgType(":note_off");
-  const String topicStr = yourDevice + ":" + midiTopic + msgType;
+  const String topicStr = yourDevice+":"+midiTopic+":"+ntof;
   const char* const topic = topicStr.c_str();
-  const char* const msg = (String(128+channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
+  const char* const msg = (String(channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
   printSomewhere(topic);
   printSomewhere(msg);
   mqttClient.publish(topic, msg);
@@ -267,16 +268,17 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 void playMidi(String ev, byte* payload, unsigned int length)
 {
   String msg = (char*)payload;
+  msg = msg.substring(0,length);
   int sp1 = msg.indexOf('-');
   int sp2 = msg.lastIndexOf('-');
   String ch = msg.substring(0,sp1);
   String nt = msg.substring(sp1+1,sp2);
   String vl = msg.substring(sp2+1,msg.length());
-  
-  if (ev.equals(String('note_on'))){
+
+  if (ev.equals(nton)){
     MIDI.sendNoteOn(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
   }
-  else if (ev.equals(String('note_off'))){
+  else if (ev.equals(ntof)){
     MIDI.sendNoteOff(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
   }
 }
