@@ -27,7 +27,7 @@ const char* mqttBrokerAddr = "tailor.cloudmqtt.com";
 const char* mqttUserName = "ovjirwrr";
 const char* mqttPassword = "S0f6ZlAbEwqp";
 const int mqttPort = 11333;
-const char* mqttClientID = "M5Stack(hasebe)";
+const char* mqttClientID = "M5Stack(hasebe)";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
 const String midiTopic("HMMT_hasebe:MIDI");    //  #### Your Topic Name for MIDI
@@ -130,7 +130,8 @@ void loop() {
 //-------------------------------
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
-  printSomewhere("message has come!");
+  printSomewhere("****Message has come!****");
+  printSomewhere(topic);
 }
 
 void reConnect() { // 接続が切れた際に再接続する
@@ -142,7 +143,7 @@ void reConnect() { // 接続が切れた際に再接続する
       if (mqttClient.connect(mqttClientID, mqttUserName, mqttPassword)) {
         printSomewhere("MQTT Connect OK.");
         lastConnect = true;
-        mqttClient.subscribe("inTopic");
+        mqttClient.subscribe("#");
       } else {
         printSomewhere("MQTT Connect failed, rc=");
         // http://pubsubclient.knolleary.net/api.html#state に state 一覧が書いてある
