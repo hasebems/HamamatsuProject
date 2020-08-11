@@ -16,6 +16,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <MIDI.h>
+#include <string>
 
 // WiFi settings
 const char ssid[] = "xxxxxxxx";         //  #### Your Wifi ID
@@ -30,9 +31,10 @@ const int mqttPort = 11333;
 const char* mqttClientID = "M5Stack(hasebe)";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
-const String midiTopic("HMMT_hasebe:MIDI");    //  #### Your Topic Name for MIDI
-const String gyroTopic("HMMT_hasebe:Gyro");    //  #### Your Topic Name for Gyro
-const String swTopic("HMMT_hasebe:M5SW");      //  #### Your Topic Name for M5stack Switch
+const String yourDevice("HMMT_hasebe");        //  #### Your Device
+const String midiTopic("MIDI");
+const String gyroTopic("GYRO");
+const String swTopic("M5SW");
 
 
 // Global Variables
@@ -90,7 +92,7 @@ void loop() {
       updateLcd();
       // Send to cloud
       const String msgType(":XYZ");
-      const String topicStr = gyroTopic + msgType;
+      const String topicStr = yourDevice + ":" + gyroTopic + msgType;
       const char* const topic = topicStr.c_str();
       const char* const msg = (String(gyroCurtX)+"-"+String(gyroCurtY)+"-"+String(gyroCurtZ)).c_str();
       printSomewhere(topic);
@@ -108,7 +110,8 @@ void loop() {
   // Push Button A
   if (M5.BtnA.wasPressed()) {
     // Send
-    const char* const topic = swTopic.c_str();
+    const String topicStr = yourDevice + ":" + swTopic;
+    const char* const topic = topicStr.c_str();
     const char* const msg = "Pressed";
     printSomewhere(topic);
     printSomewhere(msg);
@@ -117,7 +120,8 @@ void loop() {
   // Release Button A
   if (M5.BtnA.wasReleased()) {
     // Send
-    const char* const topic = swTopic.c_str();
+    const String topicStr = yourDevice + ":" + swTopic;
+    const char* const topic = topicStr.c_str();
     const char* const msg = "Released";
     printSomewhere(topic);
     printSomewhere(msg);
@@ -130,8 +134,20 @@ void loop() {
 //-------------------------------
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
-  printSomewhere("****Message has come!****");
-  printSomewhere(topic);
+  String yd = topic;
+  int sp1 = yd.indexOf(':');
+  int sp2 = yd.lastIndexOf(':');
+  String dev = yd.substring(0,sp1);
+  String type = yd.substring(sp1+1,sp2);
+  String ev = yd.substring(sp2+1,yd.length());
+  printSomewhere("**Message has come!**");
+
+  if ( type.equals(midiTopic) ){
+    playMidi(ev, payload, length);
+  }
+  else if ( type.equals(gyroTopic) ){
+    
+  }
 }
 
 void reConnect() { // 接続が切れた際に再接続する
@@ -225,7 +241,7 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
   const String msgType(":note_on");
-  const String topicStr = midiTopic + msgType;
+  const String topicStr = yourDevice + ":" + midiTopic + msgType;
   const char* const topic = topicStr.c_str();
   const char* const msg = (String(144+channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
   printSomewhere(topic);
@@ -237,10 +253,30 @@ void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
   const String msgType(":note_off");
-  const String topicStr = midiTopic + msgType;
+  const String topicStr = yourDevice + ":" + midiTopic + msgType;
   const char* const topic = topicStr.c_str();
   const char* const msg = (String(128+channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
   printSomewhere(topic);
   printSomewhere(msg);
   mqttClient.publish(topic, msg);
+}
+
+//-------------------------------
+//  Play MIDI message
+//-------------------------------
+void playMidi(String ev, byte* payload, unsigned int length)
+{
+  String msg = (char*)payload;
+  int sp1 = msg.indexOf('-');
+  int sp2 = msg.lastIndexOf('-');
+  String ch = msg.substring(0,sp1);
+  String nt = msg.substring(sp1+1,sp2);
+  String vl = msg.substring(sp2+1,msg.length());
+  
+  if (ev.equals(String('note_on'))){
+    MIDI.sendNoteOn(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
+  }
+  else if (ev.equals(String('note_off'))){
+    MIDI.sendNoteOff(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
+  }
 }
