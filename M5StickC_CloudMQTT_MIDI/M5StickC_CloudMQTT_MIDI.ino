@@ -1,16 +1,16 @@
 //
 //  Hamamatsu Project
-//    Data Transfer System by MQTT for M5Stick 
+//    Data Transfer System by MQTT for M5StickC 
 //
 //    Aug.8 , 2020 FabLab Hamamatsu
 //
 #define M5STACK   0
-#define M5STICK   1
-#define YOUR_DEVICE  M5STACK             //  #### Your Device M5STACK or M5STICK
+#define M5STICKC  1
+#define YOUR_DEVICE  M5STACK             //  #### Your Device M5STACK or M5STICKC
 
 #if ( YOUR_DEVICE == M5STACK )
   #include <M5Stack.h>
-#elif ( YOUR_DEVICE == M5STICK )
+#elif ( YOUR_DEVICE == M5STICKC )
   #include <M5StickC.h>
 #endif
 #include <WiFi.h>
@@ -39,7 +39,7 @@ const String swTopic("M5SW");
 
 // Global Variables
 float gyroCurtX, gyroCurtY, gyroCurtZ;  // Gyro Value
-boolean sending = false;
+boolean sending = true;
 unsigned long lastUpdateTime = 0;
 
 // MIDI
@@ -91,14 +91,7 @@ void loop() {
     lastUpdateTime = t;
     if (sending && readGyro()) {
       updateLcd();
-      // Send to cloud
-      const String msgType(":XYZ");
-      const String topicStr = yourDevice + ":" + gyroTopic + msgType;
-      const char* const topic = topicStr.c_str();
-      const char* const msg = (String(gyroCurtX)+"-"+String(gyroCurtY)+"-"+String(gyroCurtZ)).c_str();
-      printSomewhere(topic);
-      printSomewhere(msg);
-      mqttClient.publish(topic, msg);
+      sendGyroData();
     }
   }
   // Switch Enable/Disable MQTT transfer by pushing button B
@@ -111,7 +104,7 @@ void loop() {
   // Push Button A
   if (M5.BtnA.wasPressed()) {
     // Send
-    const String topicStr = yourDevice + ":" + swTopic;
+    const String topicStr = yourDevice+":"+swTopic+":A";
     const char* const topic = topicStr.c_str();
     const char* const msg = "Pressed";
     printSomewhere(topic);
@@ -121,7 +114,7 @@ void loop() {
   // Release Button A
   if (M5.BtnA.wasReleased()) {
     // Send
-    const String topicStr = yourDevice + ":" + swTopic;
+    const String topicStr = yourDevice+":"+swTopic+":A";
     const char* const topic = topicStr.c_str();
     const char* const msg = "Released";
     printSomewhere(topic);
@@ -143,6 +136,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
   String ev = yd.substring(sp2+1,yd.length());
   printSomewhere("**Message has come!**");
 
+  // Add conditions
   if ( type.equals(midiTopic) ){
     playMidi(ev, payload, length);
   }
@@ -177,7 +171,7 @@ void reConnect() { // 接続が切れた際に再接続する
 //-------------------------------
 void initPrintSomewhere(void)
 {
-#if ( YOUR_DEVICE == M5STICK )
+#if ( YOUR_DEVICE == M5STICKC )
   Serial.begin(115200);
 #endif
 }
@@ -188,7 +182,7 @@ void printSomewhere(int num)
   sprintf(strx,"%d",num);
 #if ( YOUR_DEVICE == M5STACK )
   M5.Lcd.printf("%s",strx);
-#elif ( YOUR_DEVICE == M5STICK )
+#elif ( YOUR_DEVICE == M5STICKC )
   Serial.println(txrx);
 #endif
 }
@@ -197,7 +191,7 @@ void printSomewhere(const char* txt)
 {
 #if ( YOUR_DEVICE == M5STACK )
   M5.Lcd.printf(txt);
-#elif ( YOUR_DEVICE == M5STICK )
+#elif ( YOUR_DEVICE == M5STICKC )
   Serial.println(txt);
 #endif
 }
@@ -207,13 +201,13 @@ void printSomewhere(const char* txt)
 //-------------------------------
 void initGyro(void){
   gyroCurtX = gyroCurtY = gyroCurtZ = 0;
-#if ( YOUR_DEVICE == M5STICK )
+#if ( YOUR_DEVICE == M5STICKC )
   M5.MPU6886.Init();
 #endif
 }
 
 bool readGyro() {
-#if ( YOUR_DEVICE == M5STICK )
+#if ( YOUR_DEVICE == M5STICKC )
   float gyroRawX, gyroRawY, gyroRawZ; // Gyro Raw Data
   M5.MPU6886.getGyroData(&gyroRawX, &gyroRawY, &gyroRawZ);
   gyroCurtX = gyroRawX * M5.MPU6886.gRes;
@@ -226,13 +220,24 @@ bool readGyro() {
 }
 
 void updateLcd() {
-#if ( YOUR_DEVICE == M5STICK )
+#if ( YOUR_DEVICE == M5STICKC )
   M5.Lcd.setCursor(0, 0);
   M5.Lcd.printf(sending ? "Sending" : "       ");
   M5.Lcd.setCursor(0, 30);
   M5.Lcd.printf("Gyro\nX: %7.2f\nY: %7.2f\nZ: %7.2f\n          mg",
                 gyroCurtX, gyroCurtY, gyroCurtZ);
 #endif
+}
+
+void sendGyroData(void)
+{ // Send to cloud
+  const String msgType(":XYZ");
+  const String topicStr = yourDevice+":"+gyroTopic+msgType;
+  const char* const topic = topicStr.c_str();
+  const char* const msg = (String(gyroCurtX)+"-"+String(gyroCurtY)+"-"+String(gyroCurtZ)).c_str();
+  printSomewhere(topic);
+  printSomewhere(msg);
+  mqttClient.publish(topic, msg);
 }
 
 //-------------------------------
@@ -271,9 +276,9 @@ void playMidi(String ev, byte* payload, unsigned int length)
   msg = msg.substring(0,length);
   int sp1 = msg.indexOf('-');
   int sp2 = msg.lastIndexOf('-');
-  String ch = msg.substring(0,sp1);
-  String nt = msg.substring(sp1+1,sp2);
-  String vl = msg.substring(sp2+1,msg.length());
+  const String ch = msg.substring(0,sp1);
+  const String nt = msg.substring(sp1+1,sp2);
+  const String vl = msg.substring(sp2+1,msg.length());
 
   if (ev.equals(nton)){
     MIDI.sendNoteOn(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
