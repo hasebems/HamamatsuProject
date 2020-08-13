@@ -4,13 +4,13 @@
 //
 //    Aug.8 , 2020 FabLab Hamamatsu
 //
-#define M5STACK   0
-#define M5STICKC  1
-#define YOUR_DEVICE  M5STACK             //  #### Your Device M5STACK or M5STICKC
+#define M5STACK
+//#define M5STICKC
+//#define YOUR_DEVICE  M5STACK             //  #### Your Device M5STACK or M5STICKC
 
-#if ( YOUR_DEVICE == M5STACK )
+#ifdef M5STACK
   #include <M5Stack.h>
-#elif ( YOUR_DEVICE == M5STICKC )
+#elif M5STICKC
   #include <M5StickC.h>
 #endif
 #include <WiFi.h>
@@ -43,7 +43,8 @@ boolean sending = true;
 unsigned long lastUpdateTime = 0;
 
 // MIDI
-MIDI_CREATE_DEFAULT_INSTANCE();
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+//MIDI_CREATE_DEFAULT_INSTANCE();
 
 //-------------------------------
 //  Arduino Functions
@@ -171,7 +172,7 @@ void reConnect() { // 接続が切れた際に再接続する
 //-------------------------------
 void initPrintSomewhere(void)
 {
-#if ( YOUR_DEVICE == M5STICKC )
+#ifdef M5STICKC
   Serial.begin(115200);
 #endif
 }
@@ -180,18 +181,18 @@ void printSomewhere(int num)
 {
   char strx[128]={0};
   sprintf(strx,"%d",num);
-#if ( YOUR_DEVICE == M5STACK )
+#ifdef M5STACK
   M5.Lcd.printf("%s",strx);
-#elif ( YOUR_DEVICE == M5STICKC )
+#elif M5STICKC
   Serial.println(txrx);
 #endif
 }
 
 void printSomewhere(const char* txt)
 {
-#if ( YOUR_DEVICE == M5STACK )
+#ifdef M5STACK
   M5.Lcd.printf(txt);
-#elif ( YOUR_DEVICE == M5STICKC )
+#elif M5STICKC
   Serial.println(txt);
 #endif
 }
@@ -201,13 +202,13 @@ void printSomewhere(const char* txt)
 //-------------------------------
 void initGyro(void){
   gyroCurtX = gyroCurtY = gyroCurtZ = 0;
-#if ( YOUR_DEVICE == M5STICKC )
+#ifdef M5STICKC
   M5.MPU6886.Init();
 #endif
 }
 
 bool readGyro() {
-#if ( YOUR_DEVICE == M5STICKC )
+#ifdef M5STICKC
   float gyroRawX, gyroRawY, gyroRawZ; // Gyro Raw Data
   M5.MPU6886.getGyroData(&gyroRawX, &gyroRawY, &gyroRawZ);
   gyroCurtX = gyroRawX * M5.MPU6886.gRes;
@@ -220,7 +221,7 @@ bool readGyro() {
 }
 
 void updateLcd() {
-#if ( YOUR_DEVICE == M5STICKC )
+#ifdef M5STICKC
   M5.Lcd.setCursor(0, 0);
   M5.Lcd.printf(sending ? "Sending" : "       ");
   M5.Lcd.setCursor(0, 30);
