@@ -105,7 +105,7 @@ void loop() {
   // Push Button A
   if (M5.BtnA.wasPressed()) {
     // Send
-    const String topicStr = yourDevice+":"+swTopic+":A";
+    const String topicStr = yourDevice+"/"+swTopic+"/A";
     const char* const topic = topicStr.c_str();
     const char* const msg = "Pressed";
     printSomewhere(topic);
@@ -115,7 +115,7 @@ void loop() {
   // Release Button A
   if (M5.BtnA.wasReleased()) {
     // Send
-    const String topicStr = yourDevice+":"+swTopic+":A";
+    const String topicStr = yourDevice+"/"+swTopic+"/A";
     const char* const topic = topicStr.c_str();
     const char* const msg = "Released";
     printSomewhere(topic);
@@ -130,8 +130,8 @@ void loop() {
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
   String yd = topic;
-  int sp1 = yd.indexOf(':');
-  int sp2 = yd.lastIndexOf(':');
+  int sp1 = yd.indexOf('/');
+  int sp2 = yd.lastIndexOf('/');
   String dev = yd.substring(0,sp1);
   String type = yd.substring(sp1+1,sp2);
   String ev = yd.substring(sp2+1,yd.length());
@@ -232,8 +232,8 @@ void updateLcd() {
 
 void sendGyroData(void)
 { // Send to cloud
-  const String msgType(":XYZ");
-  const String topicStr = yourDevice+":"+gyroTopic+msgType;
+  const String msgType("/XYZ");
+  const String topicStr = yourDevice+"/"+gyroTopic+msgType;
   const char* const topic = topicStr.c_str();
   const char* const msg = (String(gyroCurtX)+"-"+String(gyroCurtY)+"-"+String(gyroCurtZ)).c_str();
   printSomewhere(topic);
@@ -249,9 +249,10 @@ const String ntof("note_off");
 void handleNoteOn(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
-  const String topicStr = yourDevice+":"+midiTopic+":"+nton;
-  const char* const topic = topicStr.c_str();
-  const char* const msg = (String(channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
+  const String topicStr = yourDevice+"/"+midiTopic+"/"+nton;
+  const char* topic = topicStr.c_str();
+  const String msgStr = String(channel)+"-"+String(pitch)+"-"+String(velocity);
+  const char* msg = msgStr.c_str();
   printSomewhere(topic);
   printSomewhere(msg);
   mqttClient.publish(topic, msg);
@@ -260,9 +261,10 @@ void handleNoteOn(byte channel, byte pitch, byte velocity)
 void handleNoteOff(byte channel, byte pitch, byte velocity)
 {
   if (sending==false) return;
-  const String topicStr = yourDevice+":"+midiTopic+":"+ntof;
-  const char* const topic = topicStr.c_str();
-  const char* const msg = (String(channel)+"-"+String(pitch)+"-"+String(velocity)).c_str();
+  const String topicStr = yourDevice+"/"+midiTopic+"/"+ntof;
+  const char* topic = topicStr.c_str();
+  const String msgStr = String(channel)+"-"+String(pitch)+"-"+String(velocity);
+  const char* msg = msgStr.c_str();
   printSomewhere(topic);
   printSomewhere(msg);
   mqttClient.publish(topic, msg);
