@@ -29,11 +29,12 @@
 ### Mac setting
 - Open "Audio MIDI Setup"
     - Applications -> Utilities -> Audio MIDI Setup
-- Choose "MIDI Devices" tab
+- Choose "Show MIDI Studio" from pulldown menu
 - Double click "IAC Driver"
 - Choose "Ports" tab
-- Add new port by clicking "+", and name it
+- Add new port by clicking "+", and name it freely
 - Install "Processing"
+    - https://processing.org/download/
 
 ### How to modify a sketch "Processing_MQTT_MIDI.pde"
 - write topicName that you want to get.
