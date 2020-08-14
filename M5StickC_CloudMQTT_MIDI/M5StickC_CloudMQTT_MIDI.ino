@@ -6,11 +6,11 @@
 //
 #define M5STACK
 //#define M5STICKC
-//#define YOUR_DEVICE  M5STACK             //  #### Your Device M5STACK or M5STICKC
 
 #ifdef M5STACK
   #include <M5Stack.h>
-#elif M5STICKC
+#endif
+#ifdef M5STICKC
   #include <M5StickC.h>
 #endif
 #include <WiFi.h>
@@ -183,7 +183,8 @@ void printSomewhere(int num)
   sprintf(strx,"%d",num);
 #ifdef M5STACK
   M5.Lcd.printf("%s",strx);
-#elif M5STICKC
+#endif
+#ifdef M5STICKC
   Serial.println(txrx);
 #endif
 }
@@ -192,7 +193,8 @@ void printSomewhere(const char* txt)
 {
 #ifdef M5STACK
   M5.Lcd.printf(txt);
-#elif M5STICKC
+#endif
+#ifdef M5STICKC
   Serial.println(txt);
 #endif
 }
