@@ -4,8 +4,10 @@
 //
 //    Aug.8 , 2020 FabLab Hamamatsu
 //
-#define M5STACK
-//#define M5STICKC
+
+// Either of the two
+//#define M5STACK
+#define M5STICKC
 
 #ifdef M5STACK
   #include <M5Stack.h>
@@ -43,7 +45,12 @@ boolean sending = true;
 unsigned long lastUpdateTime = 0;
 
 // MIDI
-MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+#ifdef M5STACK
+　MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+#endif
+#ifdef M5STICKC
+　MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
+#endif
 //MIDI_CREATE_DEFAULT_INSTANCE();
 
 //-------------------------------
@@ -185,7 +192,7 @@ void printSomewhere(int num)
   M5.Lcd.printf("%s",strx);
 #endif
 #ifdef M5STICKC
-  Serial.println(txrx);
+  Serial.println(strx);
 #endif
 }
 
