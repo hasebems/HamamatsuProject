@@ -6,8 +6,8 @@
 //
 
 // Either of the two
-//#define M5STACK
-#define M5STICKC
+#define M5STACK
+//#define M5STICKC
 
 #ifdef M5STACK
   #include <M5Stack.h>
@@ -43,15 +43,17 @@ const String swTopic("M5SW");
 float gyroCurtX, gyroCurtY, gyroCurtZ;  // Gyro Value
 boolean sending = true;
 unsigned long lastUpdateTime = 0;
+unsigned long lastUpdateTime10ms = 0;
+long soundCnt = -1;
 
 // MIDI
 #ifdef M5STACK
-　MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
 #endif
 #ifdef M5STICKC
-　MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
+MIDI_CREATE_INSTANCE(HardwareSerial, Serial1, MIDI);
 #endif
-//MIDI_CREATE_DEFAULT_INSTANCE();
+
 
 //-------------------------------
 //  Arduino Functions
@@ -84,6 +86,9 @@ void setup() {
   MIDI.setHandleNoteOff(handleNoteOff);
   MIDI.begin();
   MIDI.turnThruOff();
+
+  //  for beep
+  M5.Speaker.begin();
 }
 
 void loop() {
@@ -93,7 +98,13 @@ void loop() {
   mqttClient.loop();
 
   MIDI.read();
-  
+
+  // update a value from sensor every 10ms
+  if (t - lastUpdateTime10ms >= 10) {
+    lastUpdateTime10ms = t;
+    beepOff();
+  }
+
   // update a value from sensor every 500ms
   if (t - lastUpdateTime >= 500) {
     lastUpdateTime = t;
@@ -253,6 +264,27 @@ void sendGyroData(void)
 //-------------------------------
 //  Send MIDI message
 //-------------------------------
+void beepOff(void)
+{
+  if (soundCnt >= 0){
+    if (++soundCnt > 10){
+      soundCnt = -1;
+      M5.Speaker.mute();
+    }
+  }
+}
+
+void beepOn(byte pitch)
+{
+  float freq = 440 * pow(2.0,((float)pitch - 69)/12);
+  ledcSetup( TONE_PIN_CHANNEL, (int)freq, 13);
+  ledcWrite( TONE_PIN_CHANNEL, 0x0FF );
+  soundCnt = 0;
+}
+
+//-------------------------------
+//  Send MIDI message
+//-------------------------------
 const String nton("note_on");
 const String ntof("note_off");
 void handleNoteOn(byte channel, byte pitch, byte velocity)
@@ -293,7 +325,9 @@ void playMidi(String ev, byte* payload, unsigned int length)
   const String vl = msg.substring(sp2+1,msg.length());
 
   if (ev.equals(nton)){
-    MIDI.sendNoteOn(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
+    int note = atoi(nt.c_str());
+    MIDI.sendNoteOn(note, atoi(vl.c_str()), atoi(ch.c_str()));
+    beepOn(note);
   }
   else if (ev.equals(ntof)){
     MIDI.sendNoteOff(atoi(nt.c_str()), atoi(vl.c_str()), atoi(ch.c_str()));
