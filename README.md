@@ -20,8 +20,8 @@
 - write your WiFi SSID/PW.
     - const char ssid[] = "xxxxxxxx"; //  #### Your Wifi ID
     - const char password[] = "xxxxxxxx"; //  #### Your Wifi PW
-- write your device name.
-    - const String yourDevice("xxxxxxxx"); //  #### Your Device
+- write your client ID.
+    - const char* mqttClientID = "xxxxxxxx"; // #### Your Client ID
 - Install this firmware to your M5Stack.
 
 
