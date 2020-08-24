@@ -26,11 +26,11 @@ const char password[] = "xxxxxxxx";     //  #### Your Wifi PW
 WiFiClient wifiClient;
 
 // MQTT settings
-const char* mqttBrokerAddr = "tailor.cloudmqtt.com";
-const char* mqttUserName = "ovjirwrr";
-const char* mqttPassword = "S0f6ZlAbEwqp";
+const char* mqttBrokerAddr = "xxxxxxxx";
+const char* mqttUserName = "xxxxxxxx";
+const char* mqttPassword = "xxxxxxxx";
 const int mqttPort = 11333;
-const char* mqttClientID = "M5Stack(hasebe)";  //  #### Your ClientID
+const char* mqttClientID = "xxxxxxxx";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
 const String yourDevice("HMMT_hasebe");        //  #### Your Device
