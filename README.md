@@ -2,6 +2,8 @@
  Data Transfer System by MQTT
 
 ## M5Stack
+ Filename is 'M5StickC_CloudMQTT_MIDI.ino', but it's for M5Stack.
+ You may prepare only M5Stack.
 
 ### Required library
 - M5Stack
@@ -11,7 +13,7 @@
 ### How to set up your MIDI instrument
 - When it receives MIDI data, it generates short beep sound.
     - Evenif you don't have any MIDI instrument, you can recognize receiving MIDI.
-- If you want to use MIDI, You need MIDI shield or board that has same functionarity.
+- If you want to use a real MIDI instrument, You need MIDI shield or board that has same functionarity.
     - https://www.sparkfun.com/products/12898
     - connect 4lines to M5stack (Rx/Tx/5v/Gnd)
     - connect to MIDI instrument
@@ -20,7 +22,11 @@
 - write your WiFi SSID/PW.
     - const char ssid[] = "xxxxxxxx"; //  #### Your Wifi ID
     - const char password[] = "xxxxxxxx"; //  #### Your Wifi PW
-- write your client ID.
+- write MQTT settings. (You should get these information from Hamamatsu)
+    - const char* mqttBrokerAddr = "xxxxxxxx";
+    - const char* mqttUserName = "xxxxxxxx";
+    - const char* mqttPassword = "xxxxxxxx";
+- write your client ID. Anything you like is OK.
     - const char* mqttClientID = "xxxxxxxx"; // #### Your Client ID
 - Install this firmware to your M5Stack.
 
