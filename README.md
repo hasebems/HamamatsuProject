@@ -1,7 +1,7 @@
 # HamamatsuProject
  Data Transfer System by MQTT
 
-## M5Stack
+## M5Stack-MQTT-MIDI
  Filename is 'M5StickC_CloudMQTT_MIDI.ino', but it's for M5Stack.
  You may prepare only M5Stack.
 
@@ -30,6 +30,38 @@
     - const char* mqttClientID = "xxxxxxxx"; // #### Your Client ID
 - Install this firmware to your M5Stack.
 
+
+## M5Stack-MQTT-MIDI-MP3(Sep.13 2020)
+ Filename is "M5Stack_CloudMQTT_MIDI_MP3".
+ First, make new Arduino sketch by loading this file.
+
+### Required library
+- M5Stack
+- MIDI Library
+- PubSubClient
+- ESP8266Audio https://github.com/earlephilhower/ESP8266Audio
+
+### How to prepare Hamamatsu Sound
+- Set MP3 file to M5Stack.
+    1. There are 21 files in folder "HamamatsuSound".
+    1. Copy those files to root directory of microSD card.
+    1. Put microSD card into M5stack.
+
+### How to modify a sketch "M5Stack_CloudMQTT_MIDI_MP3".
+- write your WiFi SSID/PW.
+    - const char ssid[] = "xxxxxxxx"; //  #### Your Wifi ID
+    - const char password[] = "xxxxxxxx"; //  #### Your Wifi PW
+- write MQTT settings. (You should get these information from Hamamatsu)
+    - const char* mqttBrokerAddr = "xxxxxxxx";
+    - const char* mqttUserName = "xxxxxxxx";
+    - const char* mqttPassword = "xxxxxxxx";
+- write your client ID. Anything you like is OK.
+    - const char* mqttClientID = "xxxxxxxx"; // #### Your Client ID
+- Install this firmware to your M5Stack.
+
+### How to use this sketch
+- If you push buttonB(center button), you can hear Hamamatsu Sound randomly.
+- If M5Stack get MQTT-MIDI, you can hear Hamamatsu Sound randomly.
 
 
 ## Processing

@@ -7,17 +7,17 @@
 import themidibus.*;   // MidiBus
 import mqtt.*;         // Processing MQTT
 
-String mqttServer = "tailor.cloudmqtt.com";
-String mqttUserName = "ovjirwrr";
-String mqttPassword = "S0f6ZlAbEwqp";
+String mqttServer = "xxxxxxxx";
+String mqttUserName = "xxxxxxxx";
+String mqttPassword = "xxxxxxxx";
 String mqttPort = "11333";
-String mqttClientID = "Processing(hasebe)";
+String mqttClientID = "xxxxxxxx";
 
 String topicNtOn = "HMMT_hasebe/MIDI/note_on";  //  ####
 String topicNtOf = "HMMT_hasebe/MIDI/note_off"; //  ####
 
-String myMIDIIn = "midiglue";                  //  ####
-String myMIDIOut = "WebMIDI";                  //  ####
+String myMIDIIn = "xxxxxxxx";                  //  ####
+String myMIDIOut = "xxxxxxxx";                  //  ####
 
 MQTTClient client;
 MidiBus myBus;
