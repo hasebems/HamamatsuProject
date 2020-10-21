@@ -24,8 +24,6 @@ const char* mqttClientID = "xxxxxxxx";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
 const String yourDevice("HMMT_chair");        //  #### Your Device
-const String midiTopic("MIDI");
-const String gyroTopic("GYRO");
 const String swTopic("M5SW");
 
 const String alphaTopic("alpha");
@@ -126,11 +124,12 @@ void loop() {
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
   String yd = topic;
-  int sp1 = yd.indexOf('/');
-  int sp2 = yd.lastIndexOf('/');
-  String dev = yd.substring(0,sp1);
-  String type = yd.substring(sp1+1,sp2);
-  String ev = yd.substring(sp2+1,yd.length());
+//  int sp1 = yd.indexOf('/');
+//  int sp2 = yd.lastIndexOf('/');
+//  String dev = yd.substring(0,sp1);
+//  String type = yd.substring(sp1+1,sp2);
+//  String ev = yd.substring(sp2+1,yd.length());
+
   printSomewhere("**Message has come!**");
 
   // Add conditions
@@ -187,7 +186,6 @@ void printSomewhere(const char* txt)
   M5.Lcd.printf(txt);
 }
 
-
 //-------------------------------
 //  Massage Chair Wave
 //-------------------------------
@@ -196,6 +194,11 @@ struct PATTERN {
   int count;
   char* msgStr;
 };
+//-------------------------------
+int patternCount;
+int patternOrder;
+int nextCount;
+int crntPtnNum;
 //-------------------------------
 //  ここに新しい動作パターンを追加
 //-------------------------------
@@ -209,29 +212,57 @@ const PATTERN ptnA[] =
     { 250, "moter;rrfff" }, 
     { 300, "moter;rrrff" }, 
     { 350, "moter;rrrrf" }, 
-    { 400, "moter;srrrr" },
-    { 450, "moter;ssrrr" },
-    { 500, "moter;sssrr" },
-    { 550, "moter;ssssr" },
-    { 600, "moter;sssss" }
+    { 400, "moter;rrrrr" },
+    { 450, "moter;srrrr" },
+    { 500, "moter;ssrrr" },
+    { 550, "moter;sssrr" },
+    { 600, "moter;ssssr" },
+    { 650, "moter;sssss" }
+};
+//-------------------------------
+const PATTERN ptnB[] = 
+{// *10msec, message
+    { 0,    "moter;fssss" },
+    { 100,  "moter;ffsss" },
+    { 200,  "moter;fffss" },  
+    { 300,  "moter;rfffs" }, 
+    { 400,  "moter;rrfff" }, 
+    { 500,  "moter;rrrff" }, 
+    { 600,  "moter;rrrrf" }, 
+    { 700,  "moter;srrrr" }, 
+    { 800,  "moter;ssrrr" },
+    { 900,  "moter;sssrr" },
+    { 1000, "moter;ssssr" },
+    { 1100, "moter;sssss" }
+};
+//-------------------------------
+const PATTERN ptnC[] = 
+{// *10msec, message
+    { 0,    "moter;fssss" },
+    { 100,  "moter;rssss" },
+    { 200,  "moter;rfsss" },  
+    { 300,  "moter;srsss" }, 
+    { 400,  "moter;srfss" }, 
+    { 500,  "moter;ssrss" }, 
+    { 600,  "moter;ssrfs" }, 
+    { 700,  "moter;sssrs" }, 
+    { 800,  "moter;sssrf" },
+    { 900,  "moter;ssssr" },
+    { 1000, "moter;ssssr" },
+    { 1100, "moter;sssss" }
 };
 //-------------------------------
 const PATTERN* ptnPtr[MAX_PATTERN_NUM] =
 { // パターン名を追加
-  ptnA, ptnA, ptnA
+  ptnA, ptnB, ptnC
 };
 const int maxPtnNum[MAX_PATTERN_NUM] = 
 { // パターンの要素数を追加
   sizeof(ptnA)/sizeof(ptnA[0]),
-  sizeof(ptnA)/sizeof(ptnA[0]),
-  sizeof(ptnA)/sizeof(ptnA[0])
+  sizeof(ptnB)/sizeof(ptnB[0]),
+  sizeof(ptnC)/sizeof(ptnC[0])
 };
 //-------------------------------
-int patternCount;
-int patternOrder;
-int nextCount;
-int crntPtnNum;
-
 void initPattern(void)
 {
   patternCount = 0;
@@ -270,7 +301,7 @@ void stopPattern(void)
   patternOrder = -1;
 }
 //-------------------------------
-//  Send massage to Massage Chair
+//  Send message to Massage Chair
 //-------------------------------
 void workAsMassageChair(int ev, byte* payload, unsigned int length)
 {
@@ -279,10 +310,10 @@ void workAsMassageChair(int ev, byte* payload, unsigned int length)
 
   //  各脳波の数値によってパターンを変える
   switch(ev){
-    case 0: if ( value > 100.0 ){ startPattern(0);} break;
-    case 1: if ( value > 100.0 ){ startPattern(0);} break;
-    case 2: if ( value > 100.0 ){ startPattern(0);} break;
-    case 3: if ( value > 100.0 ){ startPattern(0);} break;
+    case 0: if ( value > 100.0 ){ startPattern(0);} break;  //  Alpha
+    case 1: if ( value > 100.0 ){ startPattern(1);} break;  //  Beta
+    case 2: if ( value > 100.0 ){ startPattern(2);} break;  //  Delta
+    case 3: if ( value > 100.0 ){ startPattern(0);} break;  //  Theta
     default: break;
   }
 }
