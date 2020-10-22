@@ -11,25 +11,25 @@
 #include <string>
 
 // WiFi settings
-const char ssid[] = "xxxxxxxx";         //  #### Your Wifi ID
-const char password[] = "xxxxxxxx";     //  #### Your Wifi PW
+const char ssid[] = "";         //  #### Your Wifi ID
+const char password[] = "";     //  #### Your Wifi PW
 WiFiClient wifiClient;
 
 // MQTT settings
-const char* mqttBrokerAddr = "xxxxxxxx";
-const char* mqttUserName = "xxxxxxxx";
-const char* mqttPassword = "xxxxxxxx";
-const int mqttPort = 11333;
-const char* mqttClientID = "xxxxxxxx";  //  #### Your ClientID
+const char* mqttBrokerAddr = "";
+const char* mqttUserName = "";
+const char* mqttPassword = "";
+const int mqttPort = ;
+const char* mqttClientID = "";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
 const String yourDevice("HMMT_chair");        //  #### Your Device
 const String swTopic("M5SW");
 
-const String alphaTopic("alpha");
-const String betaTopic("beta");
-const String deltaTopic("delta");
-const String thetaTopic("theta");
+const String alphaTopic("/alpha");
+const String betaTopic("/beta");
+const String deltaTopic("/delta");
+const String thetaTopic("/theta");
 
 
 // Global Variables
@@ -48,7 +48,7 @@ void setup() {
   M5.begin();
   initPrintSomewhere();
   WiFi.begin(ssid, password);
-  Serial.begin(115200);
+  Serial2.begin(115200, SERIAL_8N1, 32, 33);
 
   while (WiFi.status() != WL_CONNECTED) {
     printSomewhere(".");
@@ -130,22 +130,28 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
 //  String type = yd.substring(sp1+1,sp2);
 //  String ev = yd.substring(sp2+1,yd.length());
 
-  printSomewhere("**Message has come!**");
-
   // Add conditions
   if (yd.equals(alphaTopic)){
+    printSomewhere("a:");
     workAsMassageChair(0, payload, length);
   }
   else if (yd.equals(betaTopic)){
+    printSomewhere("b:");
     workAsMassageChair(1, payload, length);
   }
   else if (yd.equals(deltaTopic)){
+    printSomewhere("d:");
     workAsMassageChair(2, payload, length);
   }
   else if (yd.equals(thetaTopic)){
+    printSomewhere("c:");
     workAsMassageChair(3, payload, length);
   }
   else {}
+
+  const String msg = (char*)payload;
+  float value = atof(msg.c_str());
+  printSomewhere((int)(value*100));
 }
 
 void reConnect() { // 接続が切れた際に再接続する
@@ -285,7 +291,7 @@ void periodicForChair(void)
   if (patternCount >= nextCount){
     const PATTERN* ptr = ptnPtr[crntPtnNum];
     char* mstr = ptr[patternOrder].msgStr;
-    Serial.println(mstr);
+    Serial2.println(mstr);
     printSomewhere(patternOrder);
     nextCount = ptr[patternOrder].count;
     patternOrder++;
