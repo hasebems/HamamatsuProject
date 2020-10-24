@@ -1,37 +1,27 @@
 # HamamatsuProject
  Data Transfer System by MQTT
 
-## 1.M5Stack-MQTT-MIDI
- Filename is 'M5StickC_CloudMQTT_MIDI.ino', but it's for M5Stack.
- You may prepare only M5Stack.
+
+## M5Stack_CloudMQTT_MIDI_OUT(Oct.24 2020)
+ Filename is 'M5Stack_CloudMQTT_MIDI_OUT.ino'.
+ Added for MIDI keyboard at Hamamatsu side on this event.
+ When someone play this keyboard, this program send MQTT-MIDI data to Bankok. 
 
 ### Required library
 - M5Stack
 - MIDI Library
 - PubSubClient
 
-### How to set up your MIDI instrument
-- When it receives MIDI data, it generates short beep sound.
-    - Evenif you don't have any MIDI instrument, you can recognize receiving MIDI.
-- If you want to use a real MIDI instrument, You need MIDI shield or board that has same functionarity.
-    - https://www.sparkfun.com/products/12898
-    - connect 4lines to M5stack (Rx/Tx/5v/Gnd)
-    - connect to MIDI instrument
+## M5StickC_CloudMQTT_muse_chair(Oct.22 2020)
+ Filename is 'M5Stack_CloudMQTT_MIDI_OUT.ino'. 
+ This program send serial data to Arduino Uno of massage chair when it receive MQTT from Bankok.
+ One serial data describe how 5 each cylinder will move in massage chair.
 
-### How to modify a sketch "M5StickC_CloudMQTT_MIDI.ino"
-- write your WiFi SSID/PW.
-    - const char ssid[] = "xxxxxxxx"; //  #### Your Wifi ID
-    - const char password[] = "xxxxxxxx"; //  #### Your Wifi PW
-- write MQTT settings. (You should get these information from Hamamatsu)
-    - const char* mqttBrokerAddr = "xxxxxxxx";
-    - const char* mqttUserName = "xxxxxxxx";
-    - const char* mqttPassword = "xxxxxxxx";
-- write your client ID. Anything you like is OK.
-    - const char* mqttClientID = "xxxxxxxx"; // #### Your Client ID
-- Install this firmware to your M5Stack.
+### Required library
+- M5StickC
+- PubSubClient
 
-
-## 2.M5Stack-MQTT-MIDI-MP3(Sep.13 2020)
+## M5Stack-MQTT-MIDI-MP3(Sep.13 2020)
 Filename is "M5Stack_CloudMQTT_MIDI_MP3.ino".  
 You can hear Hamamatsu Sound from M5stack by pushing buttonB and receiving MIDI.
 
@@ -65,8 +55,37 @@ You can hear Hamamatsu Sound from M5stack by pushing buttonB and receiving MIDI.
 - If you push buttonB(center button), you can hear Hamamatsu Sound randomly.
 - If M5Stack get MQTT-MIDI, you can hear Hamamatsu Sound randomly.
 
+## M5Stack-MQTT-MIDI
+ Filename is 'M5StickC_CloudMQTT_MIDI.ino', but it's for M5Stack.
+ You may prepare only M5Stack.
 
-## 3.Processing
+### Required library
+- M5Stack
+- MIDI Library
+- PubSubClient
+
+### How to set up your MIDI instrument
+- When it receives MIDI data, it generates short beep sound.
+    - Evenif you don't have any MIDI instrument, you can recognize receiving MIDI.
+- If you want to use a real MIDI instrument, You need MIDI shield or board that has same functionarity.
+    - https://www.sparkfun.com/products/12898
+    - connect 4lines to M5stack (Rx/Tx/5v/Gnd)
+    - connect to MIDI instrument
+
+### How to modify a sketch "M5StickC_CloudMQTT_MIDI.ino"
+- write your WiFi SSID/PW.
+    - const char ssid[] = "xxxxxxxx"; //  #### Your Wifi ID
+    - const char password[] = "xxxxxxxx"; //  #### Your Wifi PW
+- write MQTT settings. (You should get these information from Hamamatsu)
+    - const char* mqttBrokerAddr = "xxxxxxxx";
+    - const char* mqttUserName = "xxxxxxxx";
+    - const char* mqttPassword = "xxxxxxxx";
+- write your client ID. Anything you like is OK.
+    - const char* mqttClientID = "xxxxxxxx"; // #### Your Client ID
+- Install this firmware to your M5Stack.
+
+
+## Processing
 
 ### Mac setting
 - Open "Audio MIDI Setup"
