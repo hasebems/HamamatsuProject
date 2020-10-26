@@ -132,6 +132,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
   String yd = topic;
 
+  payload[length] = '\0';
+
   // Add conditions
   if (yd.equals(alphaTopic)){
     printSomewhere("a:");
@@ -221,78 +223,73 @@ int crntPtnNum;
 //-------------------------------
 const PATTERN ptnA[] = 
 {// *10msec, message    <Relax>
-    { 0,   "moter;fssss" },
-    { 50,  "moter;ffsss" },
-    { 100, "moter;fffss" },  
-    { 150, "moter;ffffs" }, 
-    { 200, "moter;rffff" }, 
-    { 250, "moter;rrfff" }, 
-    { 300, "moter;rrrff" }, 
-    { 350, "moter;rrrrf" }, 
-    { 400, "moter;rrrrr" },
-    { 450, "moter;srrrr" },
-    { 500, "moter;ssrrr" },
-    { 550, "moter;sssrr" },
-    { 600, "moter;ssssr" },
-    { 650, "moter;sssss" }
+    { 0,   "moter:fssss" },
+    { 50,  "moter:ffsss" },
+    { 100, "moter:fffss" },  
+    { 150, "moter:ffffs" }, 
+    { 200, "moter:rffff" }, 
+    { 250, "moter:rrfff" }, 
+    { 300, "moter:rrrff" }, 
+    { 350, "moter:rrrrf" }, 
+    { 400, "moter:rrrrr" },
+    { 450, "moter:srrrr" },
+    { 500, "moter:ssrrr" },
+    { 550, "moter:sssrr" },
+    { 600, "moter:ssssr" },
+    { 650, "moter:sssss" }
 };
 //-------------------------------
 const PATTERN ptnB[] = 
 {// *10msec, message    <Focus>
-    { 0,    "moter;fssss" },  
-    { 300,  "moter;rssss" }, 
-    { 500,  "moter;rfsss" }, 
-    { 700,  "moter;sfsss" }, 
-    { 800,  "moter;srsss" },
-    { 1000, "moter;srfss" },
-    { 1200, "moter;ssfss" },
-    { 1300, "moter;ssrss" },
-    { 1500, "moter;ssrfs" },
-    { 1700, "moter;sssfs" },
-    { 1800, "moter;sssrs" },
-    { 2000, "moter;sssrf" },
-    { 2200, "moter;ssssf" },
-    { 2300, "moter;ssssr" },
-    { 2700, "moter;sssss" }
+    { 0,    "moter:fssss" },  
+    { 300,  "moter:rssss" }, 
+    { 500,  "moter:rfsss" }, 
+    { 700,  "moter:sfsss" }, 
+    { 800,  "moter:srsss" },
+    { 1000, "moter:srfss" },
+    { 1200, "moter:ssfss" },
+    { 1300, "moter:ssrss" },
+    { 1500, "moter:ssrfs" },
+    { 1700, "moter:sssfs" },
+    { 1800, "moter:sssrs" },
+    { 2000, "moter:sssrf" },
+    { 2200, "moter:ssssf" },
+    { 2300, "moter:ssssr" },
+    { 2700, "moter:sssss" }
 };
 //-------------------------------
 const PATTERN ptnC[] = 
 {// *10msec, message    <Meditation>
-    { 0,    "moter;fsfsf" },
-    { 50,   "moter;rfrfr" },
-    { 100,  "moter;rrrrr" },
-    { 150,  "moter;srsrs" },
-    { 200,  "moter;fsfsf" },
-    { 250,  "moter;rfrsr" },
-    { 300,  "moter;rrrsr" },
-    { 350,  "moter;sssss" },
-    { 400,  "moter;fsfsf" },
-    { 450,  "moter;rfrsr" },
-    { 500,  "moter;rrrsr" },
-    { 550,  "moter;sssss" },
+    { 0,    "moter:fsfsf" },
+    { 50,   "moter:rfrfr" },
+    { 100,  "moter:rrrrr" },
+    { 150,  "moter:srsrs" },
+    { 200,  "moter:fsfsf" },
+    { 250,  "moter:rfrsr" },
+    { 300,  "moter:rrrsr" },
+    { 350,  "moter:sssss" },
+    { 400,  "moter:fsfsf" },
+    { 450,  "moter:rfrsr" },
+    { 500,  "moter:rrrsr" },
+    { 550,  "moter:sssss" },
 };
 //-------------------------------
 const PATTERN ptnD[] = 
 {// *10msec, message    <Deep Sleep>
-    { 0,    "moter;fffff" },
-    { 100,  "moter;rrrrr" },
-    { 200,  "moter;fffff" },
-    { 300,  "moter;rrrrr" },
-    { 400,  "moter;fffff" },
-    { 500,  "moter;rrrrr" },
-    { 600,  "moter;sssss" }
+    { 0,    "moter:fffff" },
+    { 100,  "moter:rrrrr" },
+    { 300,  "moter:fffff" },
+    { 400,  "moter:rrrrr" },
+    { 600,  "moter:fffff" },
+    { 700,  "moter:rrrrr" },
+    { 900,  "moter:sssss" }
 };
 //-------------------------------
 const PATTERN ptnE[] = 
 {// *10msec, message    <Sleep>
-    { 0,    "moter;fffff" },
-    { 100,  "moter;fffff" },
-    { 200,  "moter;fffff" },
-    { 300,  "moter;rrrrr" },    
-    { 400,  "moter;rrrrr" },
-    { 500,  "moter;rrrrr" },
-    { 600,  "moter;rrrrr" },    
-    { 700,  "moter;sssss" }
+    { 0,    "moter:fffff" },
+    { 300,  "moter:rrrrr" },   
+    { 700,  "moter:sssss" }
 };
 //-------------------------------
 const PATTERN* ptnPtr[MAX_PATTERN_NUM] =
