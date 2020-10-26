@@ -28,14 +28,18 @@ const String swTopic("M5SW");
 
 const String alphaTopic("/alpha");
 const String betaTopic("/beta");
+const String gammaTopic("/gamma");
 const String deltaTopic("/delta");
 const String thetaTopic("/theta");
+const String patternTopic("/massage_pattern");
 
 
 // Global Variables
 unsigned long lastUpdateTime = 0;
 unsigned long lastUpdateTime10ms = 0;
+int ptnToggle = 0;
 
+#define MAX_PATTERN_NUM   5
 
 //-------------------------------
 //  Arduino Functions
@@ -48,7 +52,7 @@ void setup() {
   M5.begin();
   initPrintSomewhere();
   WiFi.begin(ssid, password);
-  Serial2.begin(115200, SERIAL_8N1, 32, 33);
+  Serial2.begin(9600, SERIAL_8N1, 32, 33);
 
   while (WiFi.status() != WL_CONNECTED) {
     printSomewhere(".");
@@ -104,7 +108,10 @@ void loop() {
     printSomewhere(topic);
     printSomewhere(msg);
     mqttClient.publish(topic, msg);
-    startPattern(0);
+
+    startPattern(ptnToggle);
+    ptnToggle++;
+    if ( ptnToggle >= MAX_PATTERN_NUM ){ ptnToggle = 0;}
   }
   // Release Button A
   if (M5.BtnA.wasReleased()) {
@@ -124,11 +131,6 @@ void loop() {
 void mqttCallback(char* topic, byte* payload, unsigned int length)
 {
   String yd = topic;
-//  int sp1 = yd.indexOf('/');
-//  int sp2 = yd.lastIndexOf('/');
-//  String dev = yd.substring(0,sp1);
-//  String type = yd.substring(sp1+1,sp2);
-//  String ev = yd.substring(sp2+1,yd.length());
 
   // Add conditions
   if (yd.equals(alphaTopic)){
@@ -139,13 +141,23 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
     printSomewhere("b:");
     workAsMassageChair(1, payload, length);
   }
+  else if (yd.equals(gammaTopic)){
+    printSomewhere("g:");
+    workAsMassageChair(2, payload, length);
+  }
   else if (yd.equals(deltaTopic)){
     printSomewhere("d:");
-    workAsMassageChair(2, payload, length);
+    workAsMassageChair(3, payload, length);
   }
   else if (yd.equals(thetaTopic)){
     printSomewhere("c:");
-    workAsMassageChair(3, payload, length);
+    workAsMassageChair(4, payload, length);
+  }
+  else if (yd.equals(patternTopic)){
+    const String msg = (char*)payload;
+    int value = atoi(msg.c_str());
+    printSomewhere("ptn:");
+    startPattern(value);
   }
   else {}
 
@@ -195,7 +207,6 @@ void printSomewhere(const char* txt)
 //-------------------------------
 //  Massage Chair Wave
 //-------------------------------
-#define MAX_PATTERN_NUM   3
 struct PATTERN {
   int count;
   char* msgStr;
@@ -209,7 +220,7 @@ int crntPtnNum;
 //  ここに新しい動作パターンを追加
 //-------------------------------
 const PATTERN ptnA[] = 
-{// *10msec, message
+{// *10msec, message    <Relax>
     { 0,   "moter;fssss" },
     { 50,  "moter;ffsss" },
     { 100, "moter;fffss" },  
@@ -227,46 +238,74 @@ const PATTERN ptnA[] =
 };
 //-------------------------------
 const PATTERN ptnB[] = 
-{// *10msec, message
-    { 0,    "moter;fssss" },
-    { 100,  "moter;ffsss" },
-    { 200,  "moter;fffss" },  
-    { 300,  "moter;rfffs" }, 
-    { 400,  "moter;rrfff" }, 
-    { 500,  "moter;rrrff" }, 
-    { 600,  "moter;rrrrf" }, 
-    { 700,  "moter;srrrr" }, 
-    { 800,  "moter;ssrrr" },
-    { 900,  "moter;sssrr" },
-    { 1000, "moter;ssssr" },
-    { 1100, "moter;sssss" }
+{// *10msec, message    <Focus>
+    { 0,    "moter;fssss" },  
+    { 300,  "moter;rssss" }, 
+    { 500,  "moter;rfsss" }, 
+    { 700,  "moter;sfsss" }, 
+    { 800,  "moter;srsss" },
+    { 1000, "moter;srfss" },
+    { 1200, "moter;ssfss" },
+    { 1300, "moter;ssrss" },
+    { 1500, "moter;ssrfs" },
+    { 1700, "moter;sssfs" },
+    { 1800, "moter;sssrs" },
+    { 2000, "moter;sssrf" },
+    { 2200, "moter;ssssf" },
+    { 2300, "moter;ssssr" },
+    { 2700, "moter;sssss" }
 };
 //-------------------------------
 const PATTERN ptnC[] = 
-{// *10msec, message
-    { 0,    "moter;fssss" },
-    { 100,  "moter;rssss" },
-    { 200,  "moter;rfsss" },  
-    { 300,  "moter;srsss" }, 
-    { 400,  "moter;srfss" }, 
-    { 500,  "moter;ssrss" }, 
-    { 600,  "moter;ssrfs" }, 
-    { 700,  "moter;sssrs" }, 
-    { 800,  "moter;sssrf" },
-    { 900,  "moter;ssssr" },
-    { 1000, "moter;ssssr" },
-    { 1100, "moter;sssss" }
+{// *10msec, message    <Meditation>
+    { 0,    "moter;fsfsf" },
+    { 50,   "moter;rfrfr" },
+    { 100,  "moter;rrrrr" },
+    { 150,  "moter;srsrs" },
+    { 200,  "moter;fsfsf" },
+    { 250,  "moter;rfrsr" },
+    { 300,  "moter;rrrsr" },
+    { 350,  "moter;sssss" },
+    { 400,  "moter;fsfsf" },
+    { 450,  "moter;rfrsr" },
+    { 500,  "moter;rrrsr" },
+    { 550,  "moter;sssss" },
+};
+//-------------------------------
+const PATTERN ptnD[] = 
+{// *10msec, message    <Deep Sleep>
+    { 0,    "moter;fffff" },
+    { 100,  "moter;rrrrr" },
+    { 200,  "moter;fffff" },
+    { 300,  "moter;rrrrr" },
+    { 400,  "moter;fffff" },
+    { 500,  "moter;rrrrr" },
+    { 600,  "moter;sssss" }
+};
+//-------------------------------
+const PATTERN ptnE[] = 
+{// *10msec, message    <Sleep>
+    { 0,    "moter;fffff" },
+    { 100,  "moter;fffff" },
+    { 200,  "moter;fffff" },
+    { 300,  "moter;rrrrr" },    
+    { 400,  "moter;rrrrr" },
+    { 500,  "moter;rrrrr" },
+    { 600,  "moter;rrrrr" },    
+    { 700,  "moter;sssss" }
 };
 //-------------------------------
 const PATTERN* ptnPtr[MAX_PATTERN_NUM] =
 { // パターン名を追加
-  ptnA, ptnB, ptnC
+  ptnA, ptnB, ptnC, ptnD, ptnE
 };
 const int maxPtnNum[MAX_PATTERN_NUM] = 
 { // パターンの要素数を追加
   sizeof(ptnA)/sizeof(ptnA[0]),
   sizeof(ptnB)/sizeof(ptnB[0]),
-  sizeof(ptnC)/sizeof(ptnC[0])
+  sizeof(ptnC)/sizeof(ptnC[0]),
+  sizeof(ptnD)/sizeof(ptnD[0]),
+  sizeof(ptnE)/sizeof(ptnE[0])
 };
 //-------------------------------
 void initPattern(void)
@@ -282,7 +321,8 @@ void startPattern(int patternNum)
   patternCount = 0;
   patternOrder = 0;
   crntPtnNum = patternNum;
-  nextCount = ptnPtr[patternNum]->count;
+  const PATTERN* ptr = ptnPtr[crntPtnNum];
+  nextCount = ptr[patternOrder].count;
 }
 void periodicForChair(void)
 {
@@ -293,10 +333,12 @@ void periodicForChair(void)
     char* mstr = ptr[patternOrder].msgStr;
     Serial2.println(mstr);
     printSomewhere(patternOrder);
-    nextCount = ptr[patternOrder].count;
     patternOrder++;
     if (patternOrder >= maxPtnNum[crntPtnNum]){
       stopPattern();
+    }
+    else {
+      nextCount = ptr[patternOrder].count;      
     }
   }
   
@@ -318,8 +360,9 @@ void workAsMassageChair(int ev, byte* payload, unsigned int length)
   switch(ev){
     case 0: if ( value > 100.0 ){ startPattern(0);} break;  //  Alpha
     case 1: if ( value > 100.0 ){ startPattern(1);} break;  //  Beta
-    case 2: if ( value > 100.0 ){ startPattern(2);} break;  //  Delta
-    case 3: if ( value > 100.0 ){ startPattern(0);} break;  //  Theta
+    case 2: if ( value > 100.0 ){ startPattern(2);} break;  //  Gamma
+    case 3: if ( value > 100.0 ){ startPattern(3);} break;  //  Delta
+    case 4: if ( value > 100.0 ){ startPattern(4);} break;  //  Theta
     default: break;
   }
 }
