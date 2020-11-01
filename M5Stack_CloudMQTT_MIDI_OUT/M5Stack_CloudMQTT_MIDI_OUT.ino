@@ -10,8 +10,10 @@
 #include <PubSubClient.h>
 #include <MIDI.h>
 #include <string>
+#include <freertos/FreeRTOS.h>
+#include <freertos/timers.h>
 
-// WiFi settings
+// WiFi 設定
 const char ssid[] = "";         //  #### Your Wifi ID
 const char password[] = "";     //  #### Your Wifi PW
 WiFiClient wifiClient;
@@ -21,7 +23,7 @@ const char* mqttBrokerAddr = "";
 const char* mqttUserName = "";
 const char* mqttPassword = "";
 const int mqttPort = ;
-const char* mqttClientID = "";  //  #### Your ClientID
+const char* mqttClientID = "HMMTPIANO1101";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
 const String yourDevice("HMMT_hasebe");        //  #### Your Device
@@ -39,6 +41,9 @@ long soundCnt = -1;
 
 // MIDI
 MIDI_CREATE_INSTANCE(HardwareSerial, Serial2, MIDI);
+
+void printSomewhere(int num);
+void printSomewhere(const char* txt);
 
 //-------------------------------
 //  Arduino Functions
@@ -72,13 +77,30 @@ void setup() {
 
   //  for beep
   M5.Speaker.begin();
+
+  // 別タスクの起動
+  xTaskCreatePinnedToCore(task0, "Task0", 4096, NULL, 1, NULL, 0);
+}
+
+// MQTTの再接続に時間がかかるみたいなので、別タスクで動かす
+void task0(void* param)
+{
+  while (true) {
+    if(checkWifi()) {
+      if(checkMQTT()) {
+        mqttClient.loop();
+      } else {
+        vTaskDelay(1000); // 再接続まで間隔を開ける
+      }
+    } else {
+    }
+    vTaskDelay(1); // タスク内の無限ループには必ず入れる
+  }
 }
 
 void loop() {
   unsigned long t = millis();
   M5.update();
-  reConnect();
-  mqttClient.loop();
 
   MIDI.read();
 
@@ -115,6 +137,12 @@ void loop() {
     printSomewhere(msg);
     mqttClient.publish(topic, msg);
   }
+  // Push Button C
+  if (M5.BtnC.wasPressed()) {
+    // Clear LCD
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 0);
+  }
 }
 
 //-------------------------------
@@ -139,25 +167,36 @@ void mqttCallback(char* topic, byte* payload, unsigned int length)
   }
 }
 
-void reConnect() { // 接続が切れた際に再接続する
-  static unsigned long lastFailedTime = 0;
-  static boolean lastConnect = false;
+boolean checkWifi() {
+  static int lastWiFiStatus = WL_DISCONNECTED;
+  int wifiStatus = WiFi.status();
+  if (lastWiFiStatus != WL_CONNECTED && wifiStatus == WL_CONNECTED) {
+    printSomewhere("WiFi connected.");
+    printSomewhere("IP address: ");
+    printSomewhere(WiFi.localIP().toString().c_str());
+  } else if (lastWiFiStatus == WL_CONNECTED && wifiStatus != WL_CONNECTED) {
+    printSomewhere("WiFi disconnected.");
+  }
+  lastWiFiStatus = wifiStatus;
+  return (wifiStatus == WL_CONNECTED);
+}
+
+boolean checkMQTT() {
   unsigned long t = millis();
-  if (!mqttClient.connected()) {
-    if (lastConnect || t - lastFailedTime >= 5000) {
-      if (mqttClient.connect(mqttClientID, mqttUserName, mqttPassword)) {
-        printSomewhere("MQTT Connect OK.");
-        lastConnect = true;
-        mqttClient.subscribe("#");
-      } else {
-        printSomewhere("MQTT Connect failed, rc=");
-        // http://pubsubclient.knolleary.net/api.html#state に state 一覧が書いてある
-        printSomewhere(mqttClient.state());
-        lastConnect = false;
-        lastFailedTime = t;
-      }
+  boolean conn = mqttClient.connected();
+  if (!conn) {
+    printSomewhere("MQTT Disconnect. Connecting...");
+    conn = mqttClient.connect(mqttClientID, mqttUserName, mqttPassword);
+    if (conn) {
+      printSomewhere("MQTT Connect OK.");
+      mqttClient.subscribe("#");
+    } else {
+      printSomewhere("MQTT Connect failed, rc=");
+      // http://pubsubclient.knolleary.net/api.html#state に state 一覧が書いてある
+      printSomewhere(mqttClient.state());
     }
   }
+  return conn;
 }
 
 //-------------------------------
@@ -168,11 +207,13 @@ void printSomewhere(int num)
   char strx[128]={0};
   sprintf(strx,"%d",num);
   M5.Lcd.printf("%s",strx);
+  Serial.println(strx);
 }
 
 void printSomewhere(const char* txt)
 {
   M5.Lcd.printf(txt);
+  Serial.println(txt);
 }
 
 //-------------------------------
