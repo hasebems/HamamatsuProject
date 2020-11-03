@@ -58,7 +58,7 @@ void setup() {
   WiFi.begin(ssid, password);
   Serial1.begin(9600, SERIAL_8N1, 0, 26);         // RX=32   TX=33
   pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, HIGH);
+  digitalWrite(RELAY_PIN, LOW);
   
   // attempt to connect to Wifi network:
   while (WiFi.status() != WL_CONNECTED) {
@@ -323,7 +323,7 @@ void periodicForChair(void)
 void stopPattern(void)
 {
   patternOrder = -1;
-  digitalWrite(RELAY_PIN, HIGH);
+  digitalWrite(RELAY_PIN, LOW);
 }
 //-------------------------------
 //  Send message to Massage Chair
