@@ -22,7 +22,7 @@ WiFiClient wifiClient;
 const char* mqttBrokerAddr = "";
 const char* mqttUserName = "";
 const char* mqttPassword = "";
-const int mqttPort = ;
+const int mqttPort = 0;
 const char* mqttClientID = "HMMTPIANO1101";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
@@ -50,17 +50,25 @@ void printSomewhere(const char* txt);
 //-------------------------------
 void setup() {
   int wifiCheckCount = 0;
-  
+  int wifiExitCount = 0;
+
   M5.begin();
   WiFi.begin(ssid, password);
 
+  // attempt to connect to Wifi network:
   while (WiFi.status() != WL_CONNECTED) {
     printSomewhere(".");
     delay(500);
-    if ( ++wifiCheckCount > 2000 ){
+    if ( ++wifiCheckCount > 10 ){ // 5sec
       printSomewhere("\n");
-      printSomewhere("No Wifi Connection!\n");
-      break;
+      printSomewhere("Retry Wifi Connection.\n");
+      WiFi.begin(ssid, password);
+      wifiCheckCount = 0;
+      if ( ++wifiExitCount > 10 ){
+        printSomewhere("\n");
+        printSomewhere("No Wifi Connection!\n");
+        break;
+      }
     }
   }
 
