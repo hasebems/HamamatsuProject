@@ -19,7 +19,7 @@ WiFiClient wifiClient;
 const char* mqttBrokerAddr = "";
 const char* mqttUserName = "";
 const char* mqttPassword = "";
-const int mqttPort = ;
+const int mqttPort = 0;
 const char* mqttClientID = "HMMT_MassageChair1101";  //  #### Your ClientID
 PubSubClient mqttClient(wifiClient);
 
@@ -47,6 +47,7 @@ int ptnToggle = 0;
 void setup() {
 
   int wifiCheckCount = 0;
+  int wifiExitCount = 0;
   initPattern();
 
   M5.begin();
@@ -54,13 +55,20 @@ void setup() {
   WiFi.begin(ssid, password);
   Serial2.begin(9600, SERIAL_8N1, 32, 33);
 
+  // attempt to connect to Wifi network:
   while (WiFi.status() != WL_CONNECTED) {
     printSomewhere(".");
     delay(500);
-    if ( ++wifiCheckCount > 2000 ){
+    if ( ++wifiCheckCount > 10 ){ // 5sec
       printSomewhere("\n");
-      printSomewhere("No Wifi Connection!\n");
-      break;
+      printSomewhere("Retry Wifi Connection.\n");
+      WiFi.begin(ssid, password);
+      wifiCheckCount = 0;
+      if ( ++wifiExitCount > 10 ){
+        printSomewhere("\n");
+        printSomewhere("No Wifi Connection!\n");
+        break;
+      }
     }
   }
 
@@ -92,12 +100,9 @@ void loop() {
 
   // Switch Enable/Disable MQTT transfer by pushing button B
   if (M5.BtnB.wasPressed()) {
-    const String topicStr = yourDevice+"/"+swTopic+"/B";
-    const char* const topic = topicStr.c_str();
-    const char* const msg = "Pressed";
-    printSomewhere(topic);
-    printSomewhere(msg);
-    mqttClient.publish(topic, msg);
+    // Clear Display
+    M5.Lcd.fillScreen(BLACK);
+    M5.Lcd.setCursor(0, 0);
   }
   // Push Button A
   if (M5.BtnA.wasPressed()) {
