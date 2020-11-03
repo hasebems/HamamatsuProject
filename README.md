@@ -1,6 +1,17 @@
 # HamamatsuProject
  Data Transfer System by MQTT
 
+## M5StickC_serial_cushion(Nov.3 2020)
+ Filename is 'serial_cushion.ino'.
+ Added for the cushion at Hamamatsu side on this event.
+ It's based on muse_chair. 
+ This program output On/Off of GPIO for relay of cushion when it receive MQTT from Bankok.
+ One output sequence data describe when massage machine will turn on in the cushion.
+
+### Required library
+- M5Stack
+- PubSubClient
+
 
 ## M5Stack_CloudMQTT_MIDI_OUT(Oct.24 2020)
  Filename is 'M5Stack_CloudMQTT_MIDI_OUT.ino'.
