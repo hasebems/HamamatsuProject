@@ -14,6 +14,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <string>
+#include <Wire.h>
 #include "MAX30100.h"
 
 
@@ -65,6 +66,7 @@ void setup() {
   initPrintSomewhere();
   WiFi.begin(ssid, password);
   Serial.begin(115200);
+  Wire.begin(32, 33);
 
   // attempt to connect to Wifi network:
   while (WiFi.status() != WL_CONNECTED) {
